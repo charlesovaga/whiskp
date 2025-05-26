@@ -9,6 +9,7 @@ out-tsc
 node_modules
 
 # IDEs and editors
+.env
 /.idea
 .project
 .classpath
@@ -42,3 +43,7 @@ Thumbs.db
 .nx/workspace-data
 
 test-output
+
+# Next.js
+.next
+out
