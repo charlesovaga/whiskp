@@ -5,13 +5,20 @@ import { AuthenticationError, ValidationError } from "@packages/error-handler";
 import bcrypt from "bcryptjs";
 import jwt, { JsonWebTokenError } from "jsonwebtoken"
 import { setCookie } from "../utils/cookies/setCookies";
-import { Paystack } from 'paystack-api';
-import axios from 'axios';
+import Stripe from "stripe";
+// import { Paystack } from 'paystack-api';
+
 
 
 // const paystack = new Paystack(process.env.PAYSTACK_SECRET_KEY!, {
 //     apiVersion: "2025-02-24.acacia",
 // })
+
+// const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
+//     apiVersion: "2025-02-24.acacia",
+// });
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+
 
 // @desc    User Registration
 export const userRegistration = async (req:Request, res:Response, next:NextFunction) => {
@@ -88,8 +95,10 @@ export const userLogin = async (req:Request, res:Response, next:NextFunction) =>
 
         const isPasswordValid = await bcrypt.compare(password, existingUser.password!)
         if (!isPasswordValid) {
-            return next(new AuthenticationError("Invalid password"));
+            return next(new AuthenticationError("Invalid credentials"));
         }
+        res.clearCookie("vendor_access_token")
+        res.clearCookie("vendor_refresh_token")
 
         // Generate access and refresh token 
         const accessToken = jwt.sign({ id: existingUser.id, role: "user" }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: '15m' });
@@ -111,40 +120,59 @@ export const userLogin = async (req:Request, res:Response, next:NextFunction) =>
 
 
 
-export const refreshToken = async (req: Request, res: Response, next: NextFunction) => {
+export const refreshToken = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const refreshToken = req.cookies?.refresh_token;
+        const refreshToken =
+        req.cookies["refresh_token"] ||
+        req.cookies["vendor_refresh_token"] || req.headers.authorization?.split(" ")[1]
+
 
         if (!refreshToken) {
             return next(new ValidationError("Unauthorized: Refresh token missing."));
         }
 
-        let decoded: { id: string; role: string };
-
-        try {
-            decoded = jwt.verify(
+     
+     const decoded = jwt.verify(
                 refreshToken,
                 process.env.REFRESH_TOKEN_SECRET as string
             ) as { id: string; role: string };
-        } catch (err) {
-            return next(new JsonWebTokenError("Invalid refresh token."));
-        }
+        
 
-        const existingUser = await prisma.users.findUnique({
+            if (!decoded || !decoded.id || !decoded.role) {
+                return new JsonWebTokenError("Forbidden! Invalid refresh token.")
+            }
+
+    let account
+    if (decoded.role === "user") {
+        
+        account = await prisma.users.findUnique({
             where: { id: decoded.id }
         });
 
-        if (!existingUser) {
-            return next(new AuthenticationError("User not foundd."))
+    } else if (decoded.role === "seller"){
+        account = await prisma.vendors.findUnique({
+            where: {id: decoded.id},
+            include: {shop: true}
+        })
+    }
+
+        if (!account) {
+            return next(new AuthenticationError("Forbidden! User/Vendor not found."))
         }
 
         const newAccessToken = jwt.sign(
-            { id: existingUser.id, role: decoded.role },
+            { id: decoded.id, role: decoded.role },
             process.env.ACCESS_TOKEN_SECRET as string,
             { expiresIn: "15m" }
         );
 
+      if (decoded.role === "user"){
         setCookie(res, "access_token", newAccessToken);
+      } else if(decoded.role === "seller") {
+        setCookie(res, "vendor_access_token", newAccessToken);
+      }
+
+      req.role = decoded.role
 
         return res.status(200).json({
             success: true,
@@ -320,215 +348,269 @@ export const createShop = async (req:Request, res:Response, next:NextFunction) =
     }
 }
 
-//create paystack connect account link
-
-// export const createPaystackConnectLink = async (req:Request, res:Response, next:NextFunction) => {
-//     try {
-//         const {vendorId} = req.body
-//         if(!vendorId) return next (new ValidationError("Seller ID is required!"))
-
-//         const vendor = await.prisma.vendors.findUnique({
-//             where: {
-//                 id: vendorId,
-//             }
-//         })
-
-//         if(!vendor){
-//             return next (new ValidationError("Vendor is not available with this id!"))
-//         }
-
-//         const account = await paystack.accounts.create({
-//             type: "express",
-//             email: vendor?.email,
-//             country: "NGN",
-//             capabilities: {
-//                 card_payments: {requested: true},
-//                 transfers: {requested: true}
-//             }
-//         })
-
-//         await prisma.vendors.update({
-//             where: {
-//                 id: vendorId,
-//             },
-//             data: {
-//                 paystackId: account.id,
-//             }
-//         })
-
-//         const accountLinkn = await stripe.accountLinks.create({
-//             account: account.id,
-//             refersh_url: `http://localhost:3000/success`,
-//             return_url: `http://localhost:3000/success`,
-//             type: "account_onboarding",
-//         })
-
-//         res.json({url: accountLinkn.url})
-
-//     } catch (error) {
-//         return next
-//     }
-// }
-
-
-// Controller to generate Paystack OAuth URL
-
-
-export const createPaystackConnectLink = async (req: Request, res: Response, next: NextFunction) => {
-  try {
-    const { vendorId } = req.body;
-    console.log("Received vendorId:", vendorId);
-    if (!vendorId) return next(new ValidationError("Vendor ID is required!"));
-    console.log("Vendor ID is missing");
-    const vendor = await prisma.vendors.findUnique({
-      where: {
-        id: vendorId,
-      },
-    });
-
-    if (!vendor) {
-        console.log("Vendor not found with ID:", vendorId);
-      return next(new ValidationError("Vendor is not available with this id!"));
-    }
-
-    // Create Paystack account via axios
-    const accountResponse = await axios.post(
-      "https://api.paystack.co/merchant",
-      {
-        type: "express",
-        email: vendor?.email,
-        country: "NGN",
-        capabilities: {
-          card_payments: { requested: true },
-          transfers: { requested: true },
-        },
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const account = accountResponse.data.data;
-
-    // Save Paystack account ID
-    await prisma.vendors.update({
-      where: {
-        id: vendorId,
-      },
-      data: {
-        paystackId: account.id,
-      },
-    });
-
-    // Create account link
-    const accountLinkResponse = await axios.post(
-      "https://api.paystack.co/account_links",
-      {
-        account: account.id,
-        refresh_url: `http://localhost:3000/success`,
-        return_url: `http://localhost:3000/success`,
-        type: "account_onboarding",
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
-
-    const accountLink = accountLinkResponse.data.data;
-
-    res.json({ url: accountLink.url });
-  } catch (error) {
-    return next(error);
-  }
-};
-
-
-export const handlePaystackOAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
-  const { code, state } = req.query; // state === vendorId
-
-  if (!code || !state) return next(new ValidationError("Missing code or vendor ID"));
-
-  try {
-    const tokenRes = await axios.post('https://connect.paystack.com/token', {
-      grant_type: 'authorization_code',
-      client_id: process.env.PAYSTACK_CLIENT_ID,
-      client_secret: process.env.PAYSTACK_SECRET_KEY,
-      code,
-      redirect_uri: process.env.PAYSTACK_REDIRECT_URI,
-    });
-
-    const { access_token, account_id } = tokenRes.data;
-
-    // Save vendor Paystack details
-    await prisma.vendors.update({
-      where: { id: state.toString() },
-      data: {
-        paystackAccessToken: access_token,
-        paystackAccountId: account_id,
-      },
-    });
-
-    return res.redirect(`/dashboard?vendorId=${state}&connected=true`);
-  } catch (error) {
-    return next(error);
-  }
-};
-
-
-export const createPaystackSubaccount = async (req: Request, res: Response, next: NextFunction) => {
+// Create Stripe Connect Account Link
+export const createStripeConnectLink = async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const { vendorId } = req.body;
-      if (!vendorId) return next(new ValidationError("Vendor ID is required!"));
-  
-      const vendor = await prisma.vendors.findUnique({
-        where: { id: vendorId },
-      });
-  
-      if (!vendor) return next(new ValidationError("Vendor not found!"));
-  
-      // Create Paystack subaccount via axios
-      const subaccountResponse = await axios.post(
-        "https://api.paystack.co/subaccount",
-        {
-          business_name: vendor.businessName,
-          settlement_bank: vendor.bankCode,
-          account_number: vendor.accountNumber,
-          percentage_charge: 80,
-          description: "Vendor subaccount for split payments",
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
-            "Content-Type": "application/json",
-          },
+        const { vendorId } = req.body;
+        if (!vendorId) return next(new ValidationError("Vendor ID is required!"));
+
+        const vendor = await prisma.vendors.findUnique({
+            where: {
+                id: vendorId,
+            }
+        });
+
+        if (!vendor) {
+            return next(new ValidationError("Vendor is not available with this ID!"));
         }
-      );
-  
-      const subaccount = subaccountResponse.data.data;
-  
-      // Save subaccount code to DB
-      await prisma.vendors.update({
-        where: { id: vendorId },
-        data: {
-          paystackSubaccountCode: subaccount.subaccount_code,
-        },
-      });
-  
-      res.status(200).json({ message: "Subaccount created successfully", subaccount });
+
+        // Create Stripe account
+        const account = await stripe.accounts.create({
+            type: "express",
+            email: vendor?.email,
+            country: vendor?.country || "US", // Default to US if country is not provide
+            capabilities: {
+                card_payments: { requested: true },
+                transfers: { requested: true }
+            }
+        });
+
+        // Update vendor with Stripe account ID
+        await prisma.vendors.update({
+            where: {
+                id: vendorId,
+            },
+            data: {
+                stripeId: account.id,
+            }
+        });
+
+        // Create account link
+        const accountLink = await stripe.accountLinks.create({
+            account: account.id,
+            refresh_url: `http://localhost:3000/success`,
+            return_url: `http://localhost:3000/success`,
+            type: "account_onboarding",
+        });
+
+        res.json({ url: accountLink.url });
+
     } catch (error) {
-      return next(error);
+        return next(error);
     }
-  };
+}
+
+// //create stripe connect account link
+
+// // export const createPaystackConnectLink = async (req:Request, res:Response, next:NextFunction) => {
+// //     try {
+// //         const {vendorId} = req.body
+// //         if(!vendorId) return next (new ValidationError("Seller ID is required!"))
+
+// //         const vendor = await.prisma.vendors.findUnique({
+// //             where: {
+// //                 id: vendorId,
+// //             }
+// //         })
+
+// //         if(!vendor){
+// //             return next (new ValidationError("Vendor is not available with this id!"))
+// //         }
+
+// //         const account = await paystack.accounts.create({
+// //             type: "express",
+// //             email: vendor?.email,
+// //             country: "NGN",
+// //             capabilities: {
+// //                 card_payments: {requested: true},
+// //                 transfers: {requested: true}
+// //             }
+// //         })
+
+// //         await prisma.vendors.update({
+// //             where: {
+// //                 id: vendorId,
+// //             },
+// //             data: {
+// //                 paystackId: account.id,
+// //             }
+// //         })
+
+// //         const accountLinkn = await stripe.accountLinks.create({
+// //             account: account.id,
+// //             refersh_url: `http://localhost:3000/success`,
+// //             return_url: `http://localhost:3000/success`,
+// //             type: "account_onboarding",
+// //         })
+
+// //         res.json({url: accountLinkn.url})
+
+// //     } catch (error) {
+// //         return next
+// //     }
+// // }
+
+
+// // Controller to generate Paystack OAuth URL
+
+
+// export const createPaystackConnectLink = async (req: Request, res: Response, next: NextFunction) => {
+//   try {
+//     const { vendorId } = req.body;
+//     console.log("Received vendorId:", vendorId);
+//     if (!vendorId) return next(new ValidationError("Vendor ID is required!"));
+//     console.log("Vendor ID is missing");
+//     const vendor = await prisma.vendors.findUnique({
+//       where: {
+//         id: vendorId,
+//       },
+//     });
+
+//     if (!vendor) {
+//         console.log("Vendor not found with ID:", vendorId);
+//       return next(new ValidationError("Vendor is not available with this id!"));
+//     }
+
+//     // Create Paystack account via axios
+//     const accountResponse = await axios.post(
+//       "https://api.paystack.co/merchant",
+//       {
+//         type: "express",
+//         email: vendor?.email,
+//         country: "NGN",
+//         capabilities: {
+//           card_payments: { requested: true },
+//           transfers: { requested: true },
+//         },
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     const account = accountResponse.data.data;
+
+//     // Save Paystack account ID
+//     await prisma.vendors.update({
+//       where: {
+//         id: vendorId,
+//       },
+//       data: {
+//         paystackId: account.id,
+//       },
+//     });
+
+//     // Create account link
+//     const accountLinkResponse = await axios.post(
+//       "https://api.paystack.co/account_links",
+//       {
+//         account: account.id,
+//         refresh_url: `http://localhost:3000/success`,
+//         return_url: `http://localhost:3000/success`,
+//         type: "account_onboarding",
+//       },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+//           "Content-Type": "application/json",
+//         },
+//       }
+//     );
+
+//     const accountLink = accountLinkResponse.data.data;
+
+//     res.json({ url: accountLink.url });
+//   } catch (error) {
+//     return next(error);
+//   }
+// };
+
+
+// export const handlePaystackOAuthCallback = async (req: Request, res: Response, next: NextFunction) => {
+//   const { code, state } = req.query; // state === vendorId
+
+//   if (!code || !state) return next(new ValidationError("Missing code or vendor ID"));
+
+//   try {
+//     const tokenRes = await axios.post('https://connect.paystack.com/token', {
+//       grant_type: 'authorization_code',
+//       client_id: process.env.PAYSTACK_CLIENT_ID,
+//       client_secret: process.env.PAYSTACK_SECRET_KEY,
+//       code,
+//       redirect_uri: process.env.PAYSTACK_REDIRECT_URI,
+//     });
+
+//     const { access_token, account_id } = tokenRes.data;
+
+//     // Save vendor Paystack details
+//     await prisma.vendors.update({
+//       where: { id: state.toString() },
+//       data: {
+//         paystackAccessToken: access_token,
+//         paystackAccountId: account_id,
+//       },
+//     });
+
+//     return res.redirect(`/dashboard?vendorId=${state}&connected=true`);
+//   } catch (error) {
+//     return next(error);
+//   }
+// };
+
+
+// export const createPaystackSubaccount = async (req: Request, res: Response, next: NextFunction) => {
+//     try {
+//       const { vendorId } = req.body;
+//       if (!vendorId) return next(new ValidationError("Vendor ID is required!"));
+  
+//       const vendor = await prisma.vendors.findUnique({
+//         where: { id: vendorId },
+//       });
+  
+//       if (!vendor) return next(new ValidationError("Vendor not found!"));
+  
+//       // Create Paystack subaccount via axios
+//       const subaccountResponse = await axios.post(
+//         "https://api.paystack.co/subaccount",
+//         {
+//           business_name: vendor.businessName,
+//           settlement_bank: vendor.bankCode,
+//           account_number: vendor.accountNumber,
+//           percentage_charge: 80,
+//           description: "Vendor subaccount for split payments",
+//         },
+//         {
+//           headers: {
+//             Authorization: `Bearer ${process.env.PAYSTACK_SECRET_KEY}`,
+//             "Content-Type": "application/json",
+//           },
+//         }
+//       );
+  
+//       const subaccount = subaccountResponse.data.data;
+  
+//       // Save subaccount code to DB
+//       await prisma.vendors.update({
+//         where: { id: vendorId },
+//         data: {
+//           paystackSubaccountCode: subaccount.subaccount_code,
+//         },
+//       });
+  
+//       res.status(200).json({ message: "Subaccount created successfully", subaccount });
+//     } catch (error) {
+//       return next(error);
+//     }
+//   };
   
 
 
 // @desc    Vendor Login
+
+
 export const vendorLogin = async (req:Request, res:Response, next:NextFunction) => {
     try {
         const { email, password } = req.body;
@@ -537,17 +619,20 @@ export const vendorLogin = async (req:Request, res:Response, next:NextFunction) 
             return next(new ValidationError("All fields are required"));
         }
         // Check if user already exists
-        const existingVendor = await prisma.users.findUnique({
+        const existingVendor = await prisma.vendors.findUnique({
             where: { email }
         })
         if (!existingVendor) {
-            return next(new AuthenticationError("User does not exist"));
+            return next(new AuthenticationError("Vendor does not exist"));
         }
 
         const isPasswordValid = await bcrypt.compare(password, existingVendor.password!)
         if (!isPasswordValid) {
-            return next(new AuthenticationError("Invalid password"));
+            return next(new AuthenticationError("Invalid credentials"));
         }
+
+        res.clearCookie("access_token")
+        res.clearCookie("refresh_token")
 
         // Generate access and refresh token 
         const accessToken = jwt.sign({ id: existingVendor.id, role: "seller" }, process.env.ACCESS_TOKEN_SECRET as string, { expiresIn: '15m' });
@@ -567,13 +652,13 @@ export const vendorLogin = async (req:Request, res:Response, next:NextFunction) 
     }
 }
 
-// @desc    logged in user
+// @desc    logged in Vendor
 export const getVendor = async (req: any, res: Response, next: NextFunction) => {
     try {
         const existingVendor = req.existingVendor
         res.status(201).json({
             success: true,
-            existingVendor,
+            existingVendor: req.vendor
         })
     } catch (error) {
         next(error)

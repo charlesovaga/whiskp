@@ -8,7 +8,8 @@ import {useForm}  from "react-hook-form"
 import axios, {AxiosError} from "axios"
 import { countries } from 'apps/vendor-ui/src/utils/countries'
 import CreateShop from 'apps/vendor-ui/src/shared/modules/auth/create-shop'
-import PaystackLogo from 'apps/vendor-ui/src/assets/svgs/paystack-logo'
+
+import StripeLogo from 'apps/vendor-ui/src/assets/svgs/stripe-logo'
  
 // type FormData = {
 //     name: string
@@ -108,24 +109,17 @@ const resendOtp = () => {
     }
 }
 
-const connectPaystack = async () => {
-    console.log("Vendor ID before axios call:", vendorId);
+const connectStripe = async () => {
+    
 try {
-    const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-Paystack-link`,
+    const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URI}/api/create-stripe-link`,
         {vendorId}
-
-        
-        
-
-       )
-       console.log("Vendor ID before axios call:", vendorId);
-       console.log("Sending vendorId:", vendorId);
-
-       if (response.data.url){
+)
+     if (response.data.url){
         window.location.href = response.data.url
        }
 } catch (error) {
-    console.log("Paystack Connection Error:", error)
+    console.log("Stripe Connection Error:", error)
 
 
 }
@@ -388,9 +382,10 @@ try {
             </h3>
             <br />
             <button className="w-full m-auto flex items-center justify-center gap-3 text-lg bg-[#334155] text-white py-2 rounded-lg"
-            onClick={connectPaystack}>
-               <p className="ml-24 gap-3 flex justify-center">
-               Connect Paystack <PaystackLogo/>
+            onClick={connectStripe}>
+               <p className=" gap-3 flex justify-center">
+               Connect Account
+                {/* <StripeLogo/> */}
                </p>
             </button>
            </div>

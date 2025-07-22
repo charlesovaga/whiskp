@@ -17,6 +17,9 @@
     },
     {
       "path": "./apps/vendor-ui"
+    },
+    {
+      "path": "./apps/product-service"
     }
   ]
 }

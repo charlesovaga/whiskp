@@ -28,11 +28,12 @@
       ]
     },
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": "../../",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "include": [
     "../../apps/vendor-ui/.next/types/**/*.ts",
+    "../../packages/**/*.tsx",
     "../../dist/apps/vendor-ui/.next/types/**/*.ts",
     "next-env.d.ts",
     "src/**/*.js",
@@ -41,7 +42,7 @@
     "src/**/*.tsx",
    "src/**/*", "declarations.d.ts",
     ".next/types/**/*.ts"
-  ],
+, "../../packages/libs/imageKit/index.ts", "../../packages/components/rich-text-editor/index.ts", "../../packages/components/size-selector/index.ts"  ],
   "exclude": [
     "out-tsc",
     "dist",
