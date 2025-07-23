@@ -47,7 +47,7 @@ const HeaderBottom = () => {
         <div
           className={`w-[260px] ${
             isSticky && '-mb-2'
-          } cursor-pointer flex items-center justify-between px-5 h-[45px] rounded-xl bg-orange-600`}
+          } cursor-pointer flex items-center justify-between px-5 h-[45px]  bg-orange-600`}
           onClick={() => setShow(!show)}
         >
           <div className="flex items-center gap-2">
