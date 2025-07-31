@@ -1,14 +1,17 @@
 "use client";
 import Link from 'next/link'
 import React from 'react'
-import { HeartIcon, Search } from 'lucide-react'
+import { HeartIcon, Search, ShoppingCart } from 'lucide-react'
 import ProfileIcon from '../../assets/svgs/profile-icon'
 import CoveredMealTray from '../../assets/svgs/covered-meal-tray'
 import HeaderBottom from './HeaderBottom'
 import useUser from '../../hooks/useUser'
+import { useStore } from '../../store';
 
-const header = () => {
+const Header = () => {
   const {existingUser, isLoading} = useUser()
+  const wishlist = useStore((state:any) => state.wishlist);
+  const cart = useStore((state:any) => state.cart);
   return (
     <div className='w-full bg-white'>
       <div className="w-[80%] py-5 m-auto flex items-center justify-between">
@@ -61,16 +64,16 @@ const header = () => {
                 </Link> */}
               </div>
               <div className="flex items-center gap-5">
-                <Link href={"/cravings"} className='relative'>
-                   <CoveredMealTray/>
-                <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-white font-medium text-sm">0</span>
-                </div>
-                </Link>
-                <Link href={"/meal-tray"} className='relative'>
+                <Link href={"/wishlist"} className='relative'>
                    <HeartIcon/>
                 <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                    <span className="text-white font-medium text-sm">0</span>
+                    <span className="text-white font-medium text-sm">{wishlist?.length}</span>
+                </div>
+                </Link>
+                <Link href={"/cart"} className='relative'>
+                   <ShoppingCart/>
+                <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
+                    <span className="text-white font-medium text-sm">{cart?.length}</span>
                 </div>
                 </Link>
               </div>
@@ -83,4 +86,4 @@ const header = () => {
   )
 }
 
-export default header
+export default Header

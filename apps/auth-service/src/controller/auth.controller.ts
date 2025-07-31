@@ -188,15 +188,17 @@ export const refreshToken = async (req: any, res: Response, next: NextFunction) 
 // @desc    logged in user
 export const getUser = async (req: any, res: Response, next: NextFunction) => {
     try {
-        const existingUser = req.existingUser
-        res.status(201).json({
-            success: true,
-            existingUser,
-        })
+      console.log("req.existingUser:", req.existingUser);
+      const existingUser = req.existingUser ?? null;
+      res.status(200).json({
+        success: true,
+        existingUser,
+      });
     } catch (error) {
-        next(error)
+      next(error);
     }
-}
+  };
+  
 
 // @desc    User forgot password
 export const userForgotPassword = async (req:Request, res:Response, next:NextFunction) => {

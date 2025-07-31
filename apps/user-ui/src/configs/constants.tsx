@@ -4,8 +4,8 @@ export const navItems:  NavitemsTypes[] = [
         href: '/'
     },
     {
-        title: 'Foods',
-        href: '/foods'
+        title: 'Products',
+        href: '/products'
     },
     {
         title: 'Shops',

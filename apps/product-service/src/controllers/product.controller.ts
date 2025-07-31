@@ -2,6 +2,7 @@ import { AuthenticationError, NotFoundError, ValidationError } from "@packages/e
 import prisma from "@packages/libs/prisma";
 import {imagekit} from "@packages/libs/imageKit"
 import { NextFunction, Request, Response } from "express";
+import { Prisma } from "@prisma/client";
 
 
 //Get product category
@@ -311,6 +312,7 @@ export const createProduct = async (
         regular_price,
         subCategory,
         customProperties = {},
+        unit,
         images = [],
       } = req.body;
   
@@ -327,7 +329,9 @@ export const createProduct = async (
         !regular_price ||
         !images ||
         !tags ||
-        !stock
+        !stock ||
+        !unit
+
       ) {
         return next(new ValidationError("Missing required fields!"));
       }
@@ -374,6 +378,7 @@ export const createProduct = async (
           regular_price: parseFloat(regular_price),
           custom_properties: customProperties,
           custom_specifications: custom_specifications,
+          unit,
           images: {
             create: images
               .filter((img: any) => img && img.fileId && img.file_url)
@@ -524,4 +529,64 @@ export const restoreProduct = async (
         return res.status(500).json({message: "Error restoring product", error})
     }
 }
+
+// Get All Product
+export const getAllProducts = async (
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ) => {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const skip = (page - 1) * limit;
+      const type = req.query.type;
+      const shopId = req.query.shopId as string;
+  
+      const baseFilter: any = {
+        isDeleted: false,
+      };
+  
+      if (shopId) {
+        baseFilter.shopId = shopId;
+      }
+  
+      const orderBy: Prisma.productsOrderByWithRelationInput =
+        type === "latest"
+          ? { createdAt: "desc" }
+          : { totalSales: "desc" };
+  
+      const [products, total, top10Products] = await Promise.all([
+        prisma.products.findMany({
+          skip,
+          take: limit,
+          include: {
+            images: true,
+            Shop: true,
+          },
+          where: baseFilter,
+          orderBy,
+        }),
+  
+        prisma.products.count({ where: baseFilter }),
+        prisma.products.findMany({
+          take: 10,
+          where: baseFilter,
+          orderBy,
+        }),
+      ]);
+  
+      res.status(200).json({
+        products,
+        top10By: type === "latest" ? "latest" : "topSales",
+        top10Products,
+        total,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+      });
+    } catch (error) {
+      next(error);
+    }
+  };
+  
 

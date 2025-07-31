@@ -98,6 +98,7 @@ const Page = () => {
     
         // Set cleaned images back into form data
         data.images = cleanedImages;
+        data.unit = data.bulk_unit;
     
         await axiosInstance.post("/product/api/create-product", data);
         router.push("/dashboard/all-products");
@@ -572,7 +573,7 @@ render={({ field }) => (
          </div>
 
           <div className="mt-2">
-
+          <div className="flex gap-2">
             <Input
               label='Stock Quantity *'
               placeholder='100'
@@ -594,11 +595,47 @@ render={({ field }) => (
                 }
               })}
             />
+             {/* Unit Selector */}
+             <div className="flex flex-col space-y-1">
+  <label htmlFor="bulk_unit" className="block font-semibold text-gray-300">
+    Unit *
+  </label>
+  <select
+    id="bulk_unit"
+    {...register("bulk_unit", {
+      required: "Unit is required",
+    })}
+    defaultValue=""
+    className="w-32 h-10 border border-gray-700 bg-transparent text-white rounded-md px-3 text-sm focus:outline-none"
+  >
+    <option value="" disabled>Select unit</option>
+    <option value="kg" className="bg-black">kg</option>
+    <option value="ton" className="bg-black">ton</option>
+    <option value="liter" className="bg-black">liter</option>
+    <option value="meter" className="bg-black">meter</option>
+    <option value="pack" className="bg-black">pack</option>
+    <option value="box" className="bg-black">box</option>
+    <option value="carton" className="bg-black">carton</option>
+  </select>
+  {errors.bulk_unit && (
+    <p className="text-red-500 text-xs mt-1">
+      {errors.bulk_unit.message as string}
+    </p>
+  )}
+</div>
+
+
             {errors.stock_quantity && (
               <p className="text-red-500 text-xs mt-1">
                 {errors.stock_quantity.message as string}
               </p>
             )}
+              {errors.bulk_unit && (
+    <p className="text-red-500 text-xs mt-1">
+      {errors.bulk_unit.message as string}
+    </p>
+  )}
+  </div>
             </div>
 
 
@@ -607,13 +644,13 @@ render={({ field }) => (
             <SizeSelector control={control} errors={errors} />
           </div> */}
 
-<div className="mt-2">
+{/* <div className="mt-2">
   <label className="block font-semibold text-gray-300 mb-1">
     Quantity & Unit *
   </label>
 
   <div className="flex gap-2">
-    {/* Quantity Input */}
+   
     <Input
       type="number"
       placeholder="Enter quantity"
@@ -630,7 +667,7 @@ render={({ field }) => (
       })}
     />
 
-    {/* Unit Selector */}
+  
     <select
       {...register("bulk_unit", {
         required: "Unit is required",
@@ -649,7 +686,7 @@ render={({ field }) => (
     </select>
   </div>
 
-  {/* Error Messages */}
+
   {errors.bulk_quantity && (
     <p className="text-red-500 text-xs mt-1">
       {errors.bulk_quantity.message as string}
@@ -660,7 +697,7 @@ render={({ field }) => (
       {errors.bulk_unit.message as string}
     </p>
   )}
-</div>
+</div> */}
 
 <div className="mt-3">
   <label className='block font-semibold text-gray-300 mb-1'>

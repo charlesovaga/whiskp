@@ -20,6 +20,7 @@ const nextConfig = {
         hostname: 'ik.imagekit.io',
         pathname: '/**', // matches all paths
       },
+      
     ],
   },
   

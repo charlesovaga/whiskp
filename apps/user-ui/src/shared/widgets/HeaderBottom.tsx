@@ -1,17 +1,20 @@
 'use client';
 
-import { AlignLeft, ChevronDown, HeartIcon } from 'lucide-react';
+import { AlignLeft, ChevronDown, HeartIcon, ShoppingBag, ShoppingCart } from 'lucide-react';
 import React, { useEffect, useState } from 'react';
 import { navItems } from '../../configs/constants';
 import Link from 'next/link';
 import ProfileIcon from '../../assets/svgs/profile-icon';
 import CoveredMealTray from '../../assets/svgs/covered-meal-tray';
 import useUser from '../../hooks/useUser';
+import { useStore } from '../../store';
 
 const HeaderBottom = () => {
   const [show, setShow] = useState(false);
   const [isSticky, setIsSticky] = useState(false);
   const {existingUser, isLoading} = useUser()
+   const wishlist = useStore((state:any) => state.wishlist);
+    const cart = useStore((state:any) => state.cart);
 
   console.log(existingUser)
 
@@ -116,16 +119,16 @@ const HeaderBottom = () => {
                      </Link> */}
                    </div>
                    <div className="flex items-center gap-5">
-                     <Link href={"/cravings"} className='relative'>
-                        <CoveredMealTray/>
-                     <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                         <span className="text-white font-medium text-sm">0</span>
-                     </div>
-                     </Link>
-                     <Link href={"/meal-tray"} className='relative'>
+                     <Link href={"/wishlist"} className='relative'>
                         <HeartIcon/>
                      <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
-                         <span className="text-white font-medium text-sm">0</span>
+                         <span className="text-white font-medium text-sm">{wishlist?.length}</span>
+                     </div>
+                     </Link>
+                     <Link href={"/cart"} className='relative'>
+                        <ShoppingCart/>
+                     <div className="w-6 h-6 border-2 border-white bg-red-500 rounded-full flex items-center justify-center absolute top-[-10px] right-[-10px]">
+                         <span className="text-white font-medium text-sm">{cart?.length}</span>
                      </div>
                      </Link>
                    </div>
