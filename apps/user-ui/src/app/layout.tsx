@@ -4,7 +4,7 @@ import { Poppins, Roboto } from 'next/font/google'
 import Providers from "./providers"
 
 export const metadata = {
-  title: 'Whiskp',
+  title: 'B2bAgroAfrica',
   description: "Delicious food delivered fast to your doorstep. Explore a wide variety of cuisines from local restaurants with our reliable and affordable food delivery service.",
 }
 

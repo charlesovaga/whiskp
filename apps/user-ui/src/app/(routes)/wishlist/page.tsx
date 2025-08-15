@@ -6,12 +6,13 @@ import { useStore } from 'apps/user-ui/src/store'
 import Image from 'next/image';
 import Link from 'next/link'
 import React from 'react'
+import Footer from '../footer';
 
 function WishlistPage() {
     const {existingUser} = useUser()
     const location = useLocationTracking()
     const deviceInfo = useDeviceTracking()
-     const addToWishlist = useStore((state:any) => state.addToWishlist);
+    //  const addToWishlist = useStore((state:any) => state.addToWishlist);
       const addToCart = useStore((state:any) => state.addToCart);
      const removeFromWishlist = useStore((state:any) => state.removeFromWishlist);
      const wishlist = useStore((state:any) => state.wishlist);
@@ -131,6 +132,7 @@ function WishlistPage() {
             </div>
         )}
         </div>
+        <Footer/>
     </div>
   )
 }

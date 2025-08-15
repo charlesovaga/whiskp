@@ -60,9 +60,9 @@ function Login() {
       <div className="w-full flex justify-center">
         <div className="md:w-[480px] p-8 bg-white shadow rounded-lg ">
             <h3 className="text-3xl font-semibold text-center mb-2">
-                Login to Whiskp
+                Login to B2bAgroAfrica
             </h3>
-            <p className="text-center text-gray-500 mb-4">
+            <p className="text-center text-gray-500 mb-4 flex flex-col sm:flex-row sm:text-center sm:justify-center sm:gap-2">
                 Don't have an account? {" "}
                 <Link href={"/signup"} className="text-orange-600">
                 Sign up
@@ -80,7 +80,7 @@ function Login() {
             <form onSubmit={handleSubmit(onSubmit)}>
                 <label className='block text-gray-700 mb-1'>Email</label>
                 <input type="email" 
-                placeholder='whiskpalete@gmail.com'
+                placeholder='B2bAgroAfrica@gmail.com'
                 className='w-full p-2 border border-gray-300 outline-0 rounded mb-1'
                 {...register("email", {
                     required: "Email is required",
@@ -128,7 +128,7 @@ function Login() {
                     <input type="checkbox" className='mr-2' checked={rememberMe} onChange= {() => setRememberMe(!rememberMe)} />
                     Remember me
                 </label>
-                <Link href={"/forgot-password"} className='text-orange-500 text-sm'>
+                <Link href={"/forgot-password"} className='text-orange-500 text-sm flex justify-end mt-2 sm:mt-0'>
                 Forgot Password?
                 </Link>
                 </div>

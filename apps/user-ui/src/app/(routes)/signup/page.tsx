@@ -115,7 +115,7 @@ const resendOtp = () => {
       <div className="w-full flex justify-center">
         <div className="md:w-[480px] p-8 bg-white shadow rounded-lg ">
             <h3 className="text-3xl font-semibold text-center mb-2">
-                Signup to Whiskp
+                Signup to B2bAgroAfrica
             </h3>
             <p className="text-center text-gray-500 mb-4">
                 Already have an account? {" "}

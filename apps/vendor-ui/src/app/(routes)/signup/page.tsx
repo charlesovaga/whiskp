@@ -9,7 +9,7 @@ import axios, {AxiosError} from "axios"
 import { countries } from 'apps/vendor-ui/src/utils/countries'
 import CreateShop from 'apps/vendor-ui/src/shared/modules/auth/create-shop'
 
-import StripeLogo from 'apps/vendor-ui/src/assets/svgs/stripe-logo'
+// import StripeLogo from 'apps/vendor-ui/src/assets/svgs/stripe-logo'
  
 // type FormData = {
 //     name: string
@@ -126,10 +126,11 @@ try {
 }
 
   return (
-   <div className="w-full flex flex-col items-center pt-10 min-h-screen">
+   <div className="w-full  flex flex-col items-center pt-10 min-h-screen">
 
         {/* Onboarding stepper */}
-        <div className="relative flex items-center justify-between md:w-[50%] mb-8">
+        <div className="relative flex flex-wrap justify-center gap-x-6 gap-y-4 md:justify-between md:w-[50%] mb-8">
+
             <div className="absolute top-[25%] left-0 w-[80%] md:w-[90%] h-1 bg-gray-300 -z-10"/>
 
             {[1, 2, 3].map((step) => (
@@ -141,11 +142,16 @@ try {
     >
       {step}
     </div>
-    <span className="ml-[-15px]">
-        {
-            step === 1 ? "Create Account" : step === 2 ? "Setup Shop" : "Connect Bank"
-        }
-    </span>
+    <span
+  className="block mt-2 text-[12px] text-center text-gray-600 md:ml-[-15px] md:text-[14px]"
+>
+  {step === 1
+    ? "Create Account"
+    : step === 2
+    ? "Setup Shop"
+    : "Connect Bank"}
+</span>
+
   </div>
 ))}
 </div>

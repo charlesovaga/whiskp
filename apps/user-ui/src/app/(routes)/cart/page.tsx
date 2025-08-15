@@ -222,22 +222,33 @@ import { useStore } from 'apps/user-ui/src/store'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
+import Footer from '../footer'
 
 function CartPage() {
-    const router = useRouter()
+ 
     const { existingUser } = useUser()
     const location = useLocationTracking()
     const deviceInfo = useDeviceTracking()
     const cart = useStore((state: any) => state.cart)
-    const [discountedProductId,setDiscountedProductId ] = useState("")
-    const [discountPercent, setDiscountPercent] = useState(0)
+    const [discountedProductId ] = useState("")
+    const [discountPercent] = useState(0)
     const removeFromcart = useStore((state: any) => state.removeFromCart)
-    const [loading, setLoading] = useState(false)
-    const [discountAmount, setDiscountAmount] = useState(0)
+    const [loading] = useState(false)
+    const [discountAmount] = useState(0)
     const [couponCode, setCouponCode] = useState("")
     const [selectedAddressId, setSelectedAddressId] = useState("")
+    // const { existingUser } = useUser()
+    // const location = useLocationTracking()
+    // const deviceInfo = useDeviceTracking()
+    // const cart = useStore((state: any) => state.cart)
+    // const [discountedProductId,setDiscountedProductId ] = useState("")
+    // const [discountPercent, setDiscountPercent] = useState(0)
+    // const removeFromcart = useStore((state: any) => state.removeFromCart)
+    // const [loading, setLoading] = useState(false)
+    // const [discountAmount, setDiscountAmount] = useState(0)
+    // const [couponCode, setCouponCode] = useState("")
+    // const [selectedAddressId, setSelectedAddressId] = useState("")
 
 
  const decreaseQuantity = (id:string) => {
@@ -292,8 +303,9 @@ function CartPage() {
                 Your cart is empty! Start adding products.
             </div>
         ) : (
-            <div className="lg:flex items-start gap-10">
-               <table className="w-full border-collapse lg:w-[70%] table-fixed">
+          <div className="lg:flex lg:items-start lg:gap-10 flex-col">
+          <div className="overflow-x-auto w-full lg:w-[70%]">
+    <table className="w-full border-collapse min-w-[600px]">
   <thead className="rounded bg-[#f1f3f4]">
     <tr>
       <th className="py-4 px-6 text-left w-[30%]">Product</th>
@@ -482,9 +494,11 @@ function CartPage() {
 </div>
 
             </div>
+            </div>
         )}
  
         </div>
+        <Footer/>
     </div> 
   )
 }

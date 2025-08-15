@@ -42,8 +42,8 @@ const restoreProduct = async (productId: string) => {
 
 function ProductList() {
     const [globalFilter, setGlobalFilter] = useState("")
-    const [analyticsData, setAnalyticsData] = useState(null)
-    const [showAnalytics, setShowAnalytics] = useState(false)
+    // const [analyticsData, setAnalyticsData] = useState(null)
+    // const [showAnalytics, setShowAnalytics] = useState(false)
     const [showDeleteModal, setShowDeleteModal] = useState(false)
     const [selectedProduct, setSelectedProduct] = useState<any>()
     const queryClient = useQueryClient()
@@ -230,7 +230,8 @@ function ProductList() {
             isLoading ? (
                 <p className="text-center text-white">Loading products...</p>
             ) : (
-                <table className='w-full text-white'>
+                <table className="table-auto w-full min-w-[700px] block sm:table">
+
                     <thead>
                         {table.getHeaderGroups().map((headerGroup) => (
                             <tr key={headerGroup.id} className='border-b border-gray-800'>

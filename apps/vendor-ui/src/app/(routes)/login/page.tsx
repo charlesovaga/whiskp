@@ -61,7 +61,7 @@ function Login() {
             <h3 className="text-3xl font-semibold text-center mb-2">
                 Login to Whiskp
             </h3>
-            <p className="text-center text-gray-500 mb-4">
+            <p className="text-center text-gray-500 mb-4 flex flex-col sm:flex-row sm:text-center sm:justify-center sm:gap-2">
                 Don't have an account? {" "}
                 <Link href={"/signup"} className="text-orange-600">
                 Sign up
@@ -122,12 +122,12 @@ function Login() {
 
               
                 </div>
-                  <div className="flex justify-between items-center my-4">
+                  <div className="flex flex-col sm:flex-row justify-between sm:items-center my-4 ">
                 <label className='flex items-center text-gray-600 '>
                     <input type="checkbox" className='mr-2' checked={rememberMe} onChange= {() => setRememberMe(!rememberMe)} />
                     Remember me
                 </label>
-                <Link href={"/forgot-password"} className='text-orange-500 text-sm'>
+                <Link href={"/forgot-password"} className='text-orange-500 text-sm flex justify-end mt-2 sm:mt-0'>
                 Forgot Password?
                 </Link>
                 </div>
