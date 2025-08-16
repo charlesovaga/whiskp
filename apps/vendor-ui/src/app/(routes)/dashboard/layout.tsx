@@ -1,7 +1,7 @@
 
 'use client';
 
-import SidebarBarWrapper from 'apps/vendor-ui/src/shared/components/sidebar';
+import SidebarBarWrapper from 'apps/vendor-ui/src/shared/components/sidebar/sidebar';
 import React, { useState } from 'react';
 
 

@@ -396,7 +396,7 @@ function ProductDetailsCard({
   const [isSelected, setIselected] = useState(data?.colors?.[0] || '')
   const [isSizeSelected, setIsSizeelected] = useState(data?.sizes?.[0] || '')
   const [quantity, setQuantity] = useState(1)
-  const [unit, setUnit] = useState('');
+  const [unit] = useState('');
   const {existingUser} = useUser()
   const location = useLocationTracking()
   const deviceInfo = useDeviceTracking()

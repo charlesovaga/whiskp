@@ -24,7 +24,7 @@
 //         setActiveSidebar(pathName)
 //     }, [pathName, setActiveSidebar])
 
-//     const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "969696"
+//     const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "#969696"
 
 //     return(
 //     <Box
@@ -211,7 +211,7 @@ function SidebarBarWrapper ({ mobileOpen, setMobileOpen }: SidebarBarWrapperProp
         setMobileOpen(false)
     }, [pathName, setActiveSidebar])
 
-    const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "969696"
+    const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "#969696"
 
     return(
         <>

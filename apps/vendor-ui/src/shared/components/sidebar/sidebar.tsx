@@ -12,10 +12,14 @@ import Logo from 'apps/vendor-ui/src/assets/svgs/logo'
 import SidebarItem from './sidebar.item'
 
 import SidebarMenu from './sidebar.menu'
-import { BellPlus, BellRing, CalendarPlus, CreditCard, Headset, LayoutDashboard, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent} from 'lucide-react'
+import { BellPlus, BellRing, CalendarPlus, CreditCard, LayoutDashboard, ListOrdered, LogOut, Mail, PackageSearch, Settings, SquarePlus, TicketPercent} from 'lucide-react'
 
+interface SidebarBarWrapperProps {
+    mobileOpen: boolean;
+    setMobileOpen: (value: boolean) => void;
+  }
 
-function SidebarBarWrapper() {
+function SidebarBarWrapper({ mobileOpen, setMobileOpen }: SidebarBarWrapperProps) {
     const {activeSidebar, setActiveSidebar} = useSidebar()
     const pathName = usePathname()
     const {existingVendor} = useVendor()
@@ -24,7 +28,7 @@ function SidebarBarWrapper() {
         setActiveSidebar(pathName)
     }, [pathName, setActiveSidebar])
 
-    const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "969696"
+    const getIconColor = (route:string) => activeSidebar === route ? "#0085ff" : "#969696"
 
     return(
     <Box
@@ -57,7 +61,7 @@ function SidebarBarWrapper() {
         <Sidebar.Body className='body sidebar'>
            <SidebarItem
            title="Dashboard"
-           icon={<LayoutDashboard size={20} fill={getIconColor("/dashboard")}/>}
+           icon={<LayoutDashboard size={20} color={getIconColor("/dashboard")}/>}
            isActive={activeSidebar === "/dashboard"}
            href="/dashboard"
            /> 

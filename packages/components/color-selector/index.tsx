@@ -1,6 +1,6 @@
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { Controller, set } from "react-hook-form";
+import { Controller } from "react-hook-form";
 
 const defaultColors = [
     '#FF5733', // Red
