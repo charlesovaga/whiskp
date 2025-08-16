@@ -179,15 +179,15 @@
 
 
 'use client'
-import useSidebar from 'apps/vendor-ui/src/hooks/useSidebar'
-import useVendor from 'apps/vendor-ui/src/hooks/useVendor'
+import useSidebar from '../../../hooks/useSidebar'
+import useVendor from '../../../hooks/useVendor'
 
 import { usePathname } from 'next/navigation'
 import React, { useEffect } from 'react'
 import Box from '../box'
 import { Sidebar } from '../sidebar.styles'
 import Link from 'next/link'
-import Logo from 'apps/vendor-ui/src/assets/svgs/logo'
+import Logo from '../../../../src/assets/svgs/logo'
 
 import SidebarItem from './sidebar.item'
 

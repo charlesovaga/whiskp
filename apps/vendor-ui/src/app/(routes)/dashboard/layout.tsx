@@ -2,6 +2,7 @@
 'use client';
 
 import SidebarBarWrapper from 'apps/vendor-ui/src/shared/components/sidebar/sidebar';
+
 import React, { useState } from 'react';
 
 
@@ -40,6 +41,7 @@ function _layout({ children }: { children: React.ReactNode }) {
   }`}
 >
   <SidebarBarWrapper mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} />
+ 
 </aside>
 
       {/* Overlay backdrop on mobile */}
